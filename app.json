@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "HelloWorld",
+    "name": "PasswordGen",
     "slug": "passwordGen",
     "platforms": [
       "ios",
