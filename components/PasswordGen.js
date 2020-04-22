@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Header, Input, Divider, Button, CheckBox, Text, Slider } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+import { firebaseAuth, firebaseDB } from './firebase';
+
 export default function PasswordGen() {
-    const [name, setName] = useState('');
+    const [accountName, setAccountName] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [alphanumOnly, setAlphanumOnly] = useState(false);
@@ -40,68 +42,78 @@ export default function PasswordGen() {
         .catch((error) => Alert.alert('Error', error))
     };
 
-    const save = () => {};
+    const save = () => {
+        firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid).push(
+            { 'a': accountName, 'u': username, 'p': password }
+        );
+        setAccountName('');
+        setUsername('');
+        setPassword('');
+        Keyboard.dismiss();
+        Alert.alert("Success!", "The login details have been saved.")
+    };
 
     return (
-        <View style={{flex: 1, height: '100%'}}>
-            <Header
-                containerStyle={{backgroundColor: '#141414'}}
-                barStyle="light-content"
-                centerComponent={{ text: 'NEW CREDENTIALS', style: { color: '#ffffff', fontWeight: '600' } }}
-            />
-            <View style={styles.inputContainer}>
-                <Input
-                    placeholder="Enter the service provider" 
-                    label="Account Name"
-                    onChangeText={(name) => setName(name)}
-                    value={name} />
-                <Input
-                    placeholder="Enter your username or email" 
-                    label="User ID"
-                    onChangeText={(username) => setUsername(username)}
-                    value={username} />
-                <Input 
-                    label="Password"
-                    disabled={true}
-                    value={password} />
-                <CheckBox
-                    title='Letters and numbers only'
-                    containerStyle={{backgroundColor: 'transparent'}}
-                    textStyle={{color: 'gray'}}
-                    iconType="material"
-                    checkedIcon='check-box'
-                    uncheckedIcon='check-box-outline-blank'
-                    checkedColor='green'
-                    checked={alphanumOnly}
-                    onPress={() => setAlphanumOnly(!alphanumOnly)} />
-                <Text style={{color: 'gray'}}>Password length:</Text>
-                <Slider
-                    minimumValue={8}
-                    maximumValue={24}
-                    step={1}
-                    thumbTintColor='#141414'
-                    value={length}
-                    onValueChange={(length) => setLength(length)} />
-                <Text style={{color: 'gray'}}>Current: {length}</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View style={{flex: 1, height: '100%'}}>
+                <Header
+                    containerStyle={{backgroundColor: '#141414'}}
+                    barStyle="light-content"
+                    centerComponent={{ text: 'NEW CREDENTIALS', style: { color: '#ffffff', fontWeight: '600' } }}
+                />
+                <View style={styles.inputContainer}>
+                    <Input
+                        placeholder="Enter the service provider" 
+                        label="Account Name"
+                        onChangeText={(accountName) => setAccountName(accountName)}
+                        value={accountName} />
+                    <Input
+                        placeholder="Enter your username or email" 
+                        label="User ID"
+                        onChangeText={(username) => setUsername(username)}
+                        value={username} />
+                    <Input 
+                        label="Password"
+                        disabled={true}
+                        value={password} />
+                    <CheckBox
+                        title='Letters and numbers only'
+                        containerStyle={{backgroundColor: 'transparent'}}
+                        textStyle={{color: 'gray'}}
+                        iconType="material"
+                        checkedIcon='check-box'
+                        uncheckedIcon='check-box-outline-blank'
+                        checkedColor='green'
+                        checked={alphanumOnly}
+                        onPress={() => setAlphanumOnly(!alphanumOnly)} />
+                    <Text style={{color: 'gray'}}>Password length:</Text>
+                    <Slider
+                        minimumValue={8}
+                        maximumValue={24}
+                        step={1}
+                        thumbTintColor='#141414'
+                        value={length}
+                        onValueChange={(length) => setLength(length)} />
+                    <Text style={{color: 'gray'}}>Current: {length}</Text>
+                </View>
+                <View style={styles.buttonContainer}>
+                    <Button
+                        buttonStyle={{backgroundColor: '#51c72a'}}
+                        style={{padding: 10}}
+                        icon={<Icon style={{paddingRight: 10}} name="md-refresh" size={20} color="#ffffff" />}
+                        onPress={getPassword}
+                        title="GENERATE" />
+                </View>          
+                <Divider style={styles.divider} />
+                <View style={styles.buttonContainer}>
+                    <Button
+                        style={{padding: 10}}
+                        icon={<Icon style={{paddingRight: 10}} name="md-save" size={20} color="#ffffff" />}
+                        onPress={save}
+                        title="SAVE DETAILS" />
+                </View>
             </View>
-            <View style={styles.buttonContainer}>
-                <Button
-                    buttonStyle={{backgroundColor: '#51c72a'}}
-                    style={{padding: 10}}
-                    icon={<Icon style={{paddingRight: 10}} name="md-refresh" size={20} color="#ffffff" />}
-                    onPress={getPassword}
-                    title="GENERATE" />
-            </View>          
-            <Divider style={styles.divider} />
-            <View style={styles.buttonContainer}>
-                <Button
-                    style={{padding: 10}}
-                    icon={<Icon style={{paddingRight: 10}} name="md-save" size={20} color="#ffffff" />}
-                    onPress={save}
-                    title="SAVE DETAILS" />
-            </View>
-
-        </View>
+        </TouchableWithoutFeedback>
     );
 }
 

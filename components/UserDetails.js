@@ -1,56 +1,102 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Header, Input, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+import { firebaseAuth } from './firebase';
+
 export default function UserDetails() {
+    const [user, setUser] = useState({diplayName: firebaseAuth.currentUser.displayName, email: firebaseAuth.currentUser.email, phoneNumber: firebaseAuth.currentUser.phoneNumber});
+
+    //useEffect(setUser(firebaseAuth.currentUser.displayName), []);
+
+    const updateDetails = () => {
+        Alert.alert("Settings Updated", "Your user settings have been correctly updated.")
+    };
+
+    const resetPassword = () => {
+        Alert.alert("Password Reset Confirmation", "An email has been sent to your address with instructions on how to reset your password.")
+    };
+
+    const logOut = () => {
+        Alert.alert(
+            "Sign out confirmation",
+            "Are you sure you want to log out of the system?",
+            [
+                {text: 'Cancel', style: 'cancel'},
+                {text: "OK",
+                    style: 'destructive',
+                    onPress: () => {
+                        firebaseAuth.signOut().then(function() {
+                            Alert.alert("You have successfully signed out.");
+                          }).catch(function(error) {
+                            Alert.alert("An error occurred: " + error);
+                          });
+                    }
+                }
+            ],
+            {cancelable: false}
+        );
+    };
 
     return (
-        <View style={{flex: 1, height: '100%'}}>
-            <Header
-                containerStyle={{backgroundColor: '#141414'}}
-                barStyle="light-content"
-                centerComponent={{ text: 'USER DETAILS', style: { color: '#ffffff', fontWeight: '600' } }}
-            />
-            <View style={styles.inputContainer}>
-                <Input
-                    placeholder="Username" 
-                    label="Username" />
-                <Input
-                    placeholder="Password" 
-                    label="Password"
-                    secureTextEntry={true} /> 
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View style={{flex: 1, height: '100%', alignItems: 'center'}}>
+                <Header
+                    containerStyle={{backgroundColor: '#141414'}}
+                    barStyle="light-content"
+                    centerComponent={{ text: 'USER DETAILS', style: { color: '#ffffff', fontWeight: '600' } }}
+                />
+                <View style={styles.inputContainer}>
+                    <Input
+                        placeholder="e-mail" 
+                        label="Your e-mail address"
+                        value={user.email}
+                        disabled={true} />
+                    <Input
+                        placeholder="Display name" 
+                        label="Display name"
+                        value={user.diplayName} />
+                    <Input
+                        placeholder="Phone number" 
+                        label="Phone number"
+                        value={user.phoneNumber} />
+                </View>
+                <View style={styles.buttonContainer}>
+                    <Button
+                        buttonStyle={{backgroundColor: '#51c72a'}}
+                        style={{padding: 10}}
+                        icon={<Icon style={{paddingRight: 10}} name="md-save" size={20} color="#ffffff" />}
+                        onPress={updateDetails}
+                        title="UPDATE DETAILS" />
+                    <Button
+                        style={{padding: 10}}
+                        icon={<Icon style={{paddingRight: 10}} name="md-lock" size={20} color="#ffffff" />}
+                        onPress={resetPassword}
+                        title="RESET PASSWORD" />
+                    <Button
+                        buttonStyle={{backgroundColor: '#d43131'}}
+                        style={{padding: 10}}
+                        icon={<Icon style={{paddingRight: 10}} name="ios-log-out" size={20} color="#ffffff" />}
+                        onPress={logOut}
+                        title="LOG OUT" />
+                </View>
             </View>
-            <View style={styles.buttonContainer}>
-                <Button
-                    style={{padding: 10}}
-                    icon={<Icon style={{paddingRight: 10}} name="md-save" size={20} color="#ffffff" />}
-                    title="UPDATE" />
-                <Button
-                    buttonStyle={{backgroundColor: '#d43131'}}
-                    style={{padding: 10}}
-                    icon={<Icon style={{paddingRight: 10}} name="ios-log-out" size={20} color="#ffffff" />}
-                    onPress={() => props.navigation.navigate('SignUp')}
-                    title="LOG OUT" />
-            </View>
-        </View>
+        </TouchableWithoutFeedback>
     );
 }
 
 const styles = StyleSheet.create({
     inputContainer: {
       flex: 4,
-      alignItems: "center",
       justifyContent: "space-around",
       width: '70%',
-      marginTop: 30,
-      marginLeft: 20,
-      marginRight: 20
+      margin: 30
     },
     buttonContainer: {
       flex: 5,
-      justifyContent: 'space-around',
-      width: '50%',
-      marginBottom: '15%'
+      justifyContent: 'space-between',
+      width: '55%',
+      marginBottom: '10%'
     }
   });

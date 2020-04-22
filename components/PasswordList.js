@@ -1,29 +1,40 @@
 import React, { useState } from 'react';
-import { View, FlatList, Keyboard, Text } from 'react-native';
-import { Header, Input, Button, ListItem } from 'react-native-elements';
+import { View, Alert, FlatList, Text } from 'react-native';
+import { Header, Button, ListItem } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/Ionicons';
+
+import { firebaseAuth, firebaseDB } from './firebase';
 
 export default function PasswordList() {
     const [credentialsList, setCredentialsList] = useState([]);
 
-    /*
-    const getPassword = () => {
-        fetch('')
-        .then((response) => response.json())
-        .then((responseJSON) => setPassword(responseJSON))
-        .catch((error) => Alert.alert('Error', error))
-    }
-    */
+    React.useEffect(() => {
+        firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid).on('value', snapshot => {
+            const data = snapshot.val();
+            if (data != undefined && data != null) {
+                const details = Object.entries(data).map(item => ({...item[1], key: item[0]}));
+                setCredentialsList(details);
+            } else {
+                setCredentialsList([]);
+            }
+        });
+    }, []);
 
-    const listSeparator = () => {
-        return (
-            <View
-                style={{
-                    height: 1,
-                    width: "80%",
-                    backgroundColor: "#CED0CE",
-                    marginLeft: "10%"
-                }}
-            />
+    const deleteItem = (key) => {
+        Alert.alert(
+            "Delete confirmation",
+            "Are you sure you want to remove the login details?\nThis action cannot be undone.",
+            [
+                {text: 'Cancel', style: 'cancel'},
+                {text: "OK",
+                    style: 'destructive',
+                    onPress: () => {                
+                        firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid + '/' + key).remove();
+                        Alert.alert("Login details removed!");
+                    }
+                }
+            ],
+            {cancelable: false}
         );
     };
 
@@ -36,23 +47,20 @@ export default function PasswordList() {
             />
             <FlatList
                 style={{margin: '5%'}}
+                containerStyle={{backgroundColor: 'transparent'}}
                 data={credentialsList}
                 keyExtractor={item => item.key}
                 renderItem={({item}) => (
                     <ListItem
-                        title={item.username}
-                        subtitle={<Text style={{ color: 'grey' }}>{item.password}</Text>}
+                        title={item.a}
+                        subtitle={<Text style={{ color: 'grey' }}>{item.u}     {item.p}</Text>}
                         rightElement={
-                        <Button
-                            title='bought'
-                            icon={{ name: 'chevron-right', color: 'grey' }} 
-                            iconRight={true}
-                            type='clear'
-                            titleStyle={{ color: 'grey', fontSize: 16 }}
-                            onPress={() => deleteItem(item.key)}
-                        />}
-                        //bottomDivider
-                        ItemSeparatorComponent={listSeparator}
+                            <Button
+                                buttonStyle={{backgroundColor: '#d43131'}}
+                                icon={<Icon name="md-trash" size={20} color="#ffffff" />}
+                                onPress={() => deleteItem(item.key)} />
+                        }
+                        bottomDivider
                 />
                 )}
             />

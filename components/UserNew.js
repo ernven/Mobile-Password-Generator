@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Text, Input, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { firebaseAuth } from './firebase';
@@ -10,13 +10,14 @@ export default function UserNew() {
 
     const signUp = () => {
         firebaseAuth.createUserWithEmailAndPassword(email, password).catch(function(error) {
-            // Handle Errors here.
             var errorCode = error.code;
             var errorMessage = error.message;
+            Alert.alert("An error occurred: " + errorCode + ". " + errorMessage);
         });
     };
 
     return (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{flex: 1, alignItems: "center", padding: 20}}>
             <Text h4 style={{marginTop: 100}}>Sign up with a new user</Text>
             <View style={styles.inputContainer}>
@@ -40,6 +41,7 @@ export default function UserNew() {
                     title="Sign Up" />
             </View>
         </View>
+        </TouchableWithoutFeedback>
     );
 }
 

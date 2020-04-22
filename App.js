@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { firebaseAuth } from './components/firebase';
@@ -10,17 +10,22 @@ import MainScreen from './components/MainScreen';
 const stack = createStackNavigator();
 
 export default function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
-  firebaseAuth.onAuthStateChanged(user => {
-    if (user) {
-      setLoggedIn(true);
-    } else {
-      setLoggedIn(false);
-    }
-  });
+  const listener = () => {
+    firebaseAuth.onAuthStateChanged(user => {
+      if (user) {
+        console.log(user);
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    })
+  };
 
-  if (!loggedIn) {
+  useEffect(listener, []);
+
+  if (user === null) {
     return (
       <NavigationContainer>
         <stack.Navigator mode={'modal'} >
