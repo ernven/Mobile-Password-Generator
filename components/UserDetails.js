@@ -66,18 +66,18 @@ export default function UserDetails() {
                     <Button
                         buttonStyle={{backgroundColor: '#51c72a'}}
                         style={{padding: 10}}
-                        icon={<Icon style={{paddingRight: 10}} name="md-save" size={20} color="#ffffff" />}
+                        icon={<Icon name="md-save" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={updateDetails}
                         title="UPDATE DETAILS" />
                     <Button
                         style={{padding: 10}}
-                        icon={<Icon style={{paddingRight: 10}} name="md-lock" size={20} color="#ffffff" />}
+                        icon={<Icon name="md-lock" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={resetPassword}
                         title="RESET PASSWORD" />
                     <Button
                         buttonStyle={{backgroundColor: '#d43131'}}
                         style={{padding: 10}}
-                        icon={<Icon style={{paddingRight: 10}} name="ios-log-out" size={20} color="#ffffff" />}
+                        icon={<Icon name="ios-log-out" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={logOut}
                         title="LOG OUT" />
                 </View>

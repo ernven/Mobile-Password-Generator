@@ -19,20 +19,20 @@ export default function App() {
                         let iconName;
                         let color;
                         if (route.name === 'New') {
-                            iconName = focused ? 'ios-add-circle' : 'ios-add';
-                            color = focused ? 'blue' : 'gray';
+                            iconName = focused ? 'ios-add-circle-outline' : 'ios-add-circle-outline';
+                            color = focused ? '#2685f8' : 'gray';
                         } else if (route.name === 'Passwords') {
-                            iconName = focused ? 'ios-list-box' : 'ios-list';
-                            color = focused ? 'blue' : 'gray';
+                            iconName = focused ? 'ios-list' : 'ios-list';
+                            color = focused ? '#2685f8' : 'gray';
                         } else if (route.name === 'User') {
                             iconName = focused ? 'md-contact' : 'md-contact';
-                            color = focused ? 'blue' : 'gray';
+                            color = focused ? '#2685f8' : 'gray';
                         }
-                        return <Icon name={iconName} size={35} color={color} />;
+                        return <Icon name={iconName} size={30} style={{paddingTop: 4}} color={color} />;
                     }
                 })}
                 tabBarOptions={{
-                    activeTintColor: 'blue',
+                    activeTintColor: '#2685f8',
                     inactiveTintColor: 'gray',
                 }}
             >

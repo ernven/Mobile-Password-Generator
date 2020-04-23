@@ -36,13 +36,13 @@ export default function UserLogin(props) {
                 <View style={styles.buttonContainer}>
                     <Button
                         style={{padding: 10}}
-                        icon={<Icon style={{paddingRight: 10}} name="ios-log-in" size={20} color="#ffffff" />}
+                        icon={<Icon name="ios-log-in" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={login}
                         title="Sign In" />
                     <Button
                         buttonStyle={{backgroundColor: '#51c72a'}}
                         style={{padding: 10}}
-                        icon={<Icon style={{paddingRight: 10}} name="md-person-add" size={20} color="#ffffff" />}
+                        icon={<Icon name="md-person-add" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={() => props.navigation.navigate('SignUp')}
                         title="New User" />
                 </View>

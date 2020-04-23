@@ -15,7 +15,6 @@ export default function App() {
   const listener = () => {
     firebaseAuth.onAuthStateChanged(user => {
       if (user) {
-        console.log(user);
         setUser(user);
       } else {
         setUser(null);

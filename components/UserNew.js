@@ -36,7 +36,7 @@ export default function UserNew() {
             <View style={styles.buttonContainer}>
                 <Button
                     style={{padding: 10}}
-                    icon={<Icon style={{paddingRight: 10}} name="md-person-add" size={20} color="#ffffff" />}
+                    icon={<Icon name="md-person-add" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                     onPress={signUp}
                     title="Sign Up" />
             </View>

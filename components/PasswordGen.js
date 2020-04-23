@@ -12,8 +12,6 @@ export default function PasswordGen() {
     const [alphanumOnly, setAlphanumOnly] = useState(false);
     const [length, setLength] = useState(12);
 
-    //useEffect(getPassword, []);
-
     const getPassword = () => {
         // First provider uses url like https://password.markei.nl/random.json?symbols=false&min=8&max=8
         // Second provider uses this https://api.random.org/json-rpc/2/invoke and some request parameters
@@ -42,9 +40,12 @@ export default function PasswordGen() {
         .catch((error) => Alert.alert('Error', error))
     };
 
+    //useEffect(getPassword, []);
+
     const save = () => {
+        const currDate = new Date().toISOString();
         firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid).push(
-            { 'a': accountName, 'u': username, 'p': password }
+            { 'a': accountName, 'u': username, 'p': password, 'd': currDate }
         );
         setAccountName('');
         setUsername('');
@@ -100,7 +101,7 @@ export default function PasswordGen() {
                     <Button
                         buttonStyle={{backgroundColor: '#51c72a'}}
                         style={{padding: 10}}
-                        icon={<Icon style={{paddingRight: 10}} name="md-refresh" size={20} color="#ffffff" />}
+                        icon={<Icon name="md-refresh" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={getPassword}
                         title="GENERATE" />
                 </View>          
@@ -108,7 +109,7 @@ export default function PasswordGen() {
                 <View style={styles.buttonContainer}>
                     <Button
                         style={{padding: 10}}
-                        icon={<Icon style={{paddingRight: 10}} name="md-save" size={20} color="#ffffff" />}
+                        icon={<Icon name="md-save" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={save}
                         title="SAVE DETAILS" />
                 </View>

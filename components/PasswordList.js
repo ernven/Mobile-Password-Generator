@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Alert, FlatList, Text } from 'react-native';
-import { Header, Button, ListItem } from 'react-native-elements';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { View, Alert, FlatList } from 'react-native';
+import { Header, ListItem, Text } from 'react-native-elements';
 
 import { firebaseAuth, firebaseDB } from './firebase';
+import ListItemDetails from './ListItemDetails';
+
+var moment = require('moment');
 
 export default function PasswordList() {
     const [credentialsList, setCredentialsList] = useState([]);
@@ -47,19 +49,19 @@ export default function PasswordList() {
             />
             <FlatList
                 style={{margin: '5%'}}
-                containerStyle={{backgroundColor: 'transparent'}}
                 data={credentialsList}
                 keyExtractor={item => item.key}
                 renderItem={({item}) => (
                     <ListItem
+                        containerStyle={{backgroundColor: 'transparent'}}
                         title={item.a}
-                        subtitle={<Text style={{ color: 'grey' }}>{item.u}     {item.p}</Text>}
-                        rightElement={
-                            <Button
-                                buttonStyle={{backgroundColor: '#d43131'}}
-                                icon={<Icon name="md-trash" size={20} color="#ffffff" />}
-                                onPress={() => deleteItem(item.key)} />
+                        titleStyle={{color: 'gray', fontSize: 24}}
+                        subtitle={
+                            <View>
+                                <Text style={{ color: '#d43131', paddingTop: '2%', paddingBottom: '2%'}}>Created {moment(item.d).fromNow()}</Text>
+                            </View>
                         }
+                        rightElement={() => <ListItemDetails item={item} deleteItem={deleteItem} />}
                         bottomDivider
                 />
                 )}
