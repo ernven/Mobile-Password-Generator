@@ -20,7 +20,6 @@ export default function UserDetails() {
             email: firebaseAuth.currentUser.email,
             displayName: firebaseAuth.currentUser.displayName
         });
-        console.log(user.password);
     };
 
     // Now we have a few functions for updating a user
@@ -40,7 +39,7 @@ export default function UserDetails() {
             displayName: user.displayName
         }).then(function() {
             Alert.alert("Settings Updated", "Your display name has been correctly updated.");
-            fetchUser;
+            fetchUser();
         }).catch(function(error) {
             Alert.alert("An error occurred: " + error);
         });
@@ -52,8 +51,8 @@ export default function UserDetails() {
                 firebaseAuth.currentUser.updateEmail(user.email)
                 .then(() => {
                     Alert.alert("Settings Updated", "Your email has been correctly updated.");
-                    fetchUser;
-                    verifyEmail;
+                    fetchUser();
+                    verifyEmail();
                 }).catch((error) => {
                     Alert.alert("An error occurred: " + error);
                 });
@@ -62,8 +61,7 @@ export default function UserDetails() {
                 firebaseAuth.currentUser.updatePassword(user.password)
                 .then(() => {
                     Alert.alert("Settings Updated", "Your password has been correctly updated.");
-                    fetchUser;
-                    verifyEmail;
+                    fetchUser();
                 }).catch((error) => {
                     Alert.alert("An error occurred: " + error);
                 });
@@ -115,6 +113,7 @@ export default function UserDetails() {
         firebaseAuth.currentUser.reauthenticateWithCredential(credentials)
         .then(() => {
             setIsAuthorized(true);
+            Alert.alert("Login successful", "Please confirm your action.");
         }).catch((error) => {
             Alert.alert("An error occurred: " + error);
         });

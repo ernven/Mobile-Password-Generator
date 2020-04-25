@@ -4,10 +4,15 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { firebaseAuth } from './components/firebase';
 import * as LocalAuthentication from 'expo-local-authentication';
 
+// This enables the native screen optimization for each system (iOS and Android)
+import { enableScreens } from 'react-native-screens';
+
 import LoadingScreen from './components/LoadingScreen';
 import UserLogin from './components/UserLogin';
 import UserNew from './components/UserNew';
 import MainScreen from './components/MainScreen';
+
+enableScreens();
 
 const stack = createStackNavigator();
 
@@ -18,6 +23,8 @@ export default function App() {
   // We use this variable to check whether a user is already logged in,
   // in which case local authentication is used (e.g. TouchID on iOS)
   var loggedOut = false;
+
+  useEffect(() => listener(), []);
 
   // This listener is used to keep track of a user's session on Firebase
   const listener = () => {
@@ -37,8 +44,6 @@ export default function App() {
       }
     })
   };
-
-  useEffect(() => listener(), []);
 
   // With this function we handle the local auth using the device's biometric auth or passcode (as available)
   const options = { promptMessage: "Please authenticate to continue" };

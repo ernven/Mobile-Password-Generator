@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, Alert } from 'react-native';
 import { Overlay, Header, Text, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -10,9 +10,22 @@ export default function ListItemDetails(props) {
         setVisible(true);
     };
 
-    const deleteHandler = () => {
-        props.deleteItem(props.item.key);
-        setVisible(false);
+    const confirmDialog = () => {
+        Alert.alert(
+            "Delete confirmation",
+            "Are you sure you want to remove the login details?\nThis action cannot be undone.",
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: "OK",
+                    style: 'destructive',
+                    onPress: () => {
+                        setVisible(false);
+                        props.deleteItem(props.item.key);
+                    }
+                }
+            ],
+            {cancelable: false}
+        );
     };
 
     return (
@@ -31,7 +44,6 @@ export default function ListItemDetails(props) {
             >
                 <View style={{flex: 1, alignItems: 'center'}}>
                     <Header
-                        barStyle="light-content"
                         containerStyle={{flex: 1}}
                         leftComponent={{ text: props.item.a, style: { color: '#ffffff', width: 100, fontSize: 25 } }}
                     />
@@ -45,7 +57,7 @@ export default function ListItemDetails(props) {
                         <Button
                             buttonStyle={{backgroundColor: '#d43131', width: '85%', marginLeft: '5%'}}
                             icon={<Icon name="md-trash" size={20} style={{paddingRight: 10}} color="#ffffff" />}
-                            onPress={deleteHandler}
+                            onPress={confirmDialog}
                             title="DELETE ENTRY"
                         />
                     </View>

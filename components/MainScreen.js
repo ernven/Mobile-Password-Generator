@@ -3,6 +3,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+
+import { firebaseAuth } from './firebase';
+
 import PasswordGen from './PasswordGen';
 import PasswordList from './PasswordList';
 import UserDetails from './UserDetails';
@@ -36,8 +39,8 @@ export default function App() {
                     inactiveTintColor: 'gray',
                 }}
             >
-                <tab.Screen name="New" component={PasswordGen} />
-                <tab.Screen name="Passwords" component={PasswordList} />
+                <tab.Screen name="New" component={PasswordGen} initialParams={{uid: firebaseAuth.currentUser.uid}} />
+                <tab.Screen name="Passwords" component={PasswordList} initialParams={{uid: firebaseAuth.currentUser.uid}} />
                 <tab.Screen name="User" component={UserDetails} />
             </tab.Navigator>
         </NavigationContainer>

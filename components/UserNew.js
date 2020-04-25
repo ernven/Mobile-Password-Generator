@@ -10,7 +10,7 @@ export default function UserNew() {
 
     const signUp = () => {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
-        .then((_) => {
+        .then(() => {
             firebaseAuth.currentUser.sendEmailVerification()
             .then(() => {
                 Alert.alert("Email sent confirmation", "An email has been sent to your address with instructions on how to verify your account.");

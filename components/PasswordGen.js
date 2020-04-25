@@ -3,14 +3,16 @@ import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'rea
 import { Header, Input, Divider, Button, CheckBox, Text, Slider } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { firebaseAuth, firebaseDB } from './firebase';
+import { firebaseDB } from './firebase';
 
-export default function PasswordGen() {
+export default function PasswordGen(props) {
     const [accountName, setAccountName] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [alphanumOnly, setAlphanumOnly] = useState(false);
     const [length, setLength] = useState(12);
+
+    useEffect(() => getPassword(), []);
 
     const getPassword = () => {
         // First provider uses url like https://password.markei.nl/random.json?symbols=false&min=8&max=8
@@ -40,18 +42,20 @@ export default function PasswordGen() {
         .catch((error) => Alert.alert('Error', error))
     };
 
-    //useEffect(getPassword, []);
-
-    const save = () => {
-        const currDate = new Date().toISOString();
-        firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid).push(
-            { 'a': accountName, 'u': username, 'p': password, 'd': currDate }
-        );
-        setAccountName('');
-        setUsername('');
-        setPassword('');
-        Keyboard.dismiss();
-        Alert.alert("Success", "The login details have been saved.")
+    const saveAccount = () => {
+        if (accountName === '') {
+            Alert.alert("Error", "The account name cannot be empty.");
+        } else {
+            const currDate = new Date().toISOString();
+            firebaseDB.ref('/users/' + props.route.params.uid).push(
+                { 'a': accountName, 'u': username, 'p': password, 'd': currDate }
+            );
+            setAccountName('');
+            setUsername('');
+            getPassword();
+            Keyboard.dismiss;
+            Alert.alert("Success", "The login details have been saved.");
+        }
     };
 
     return (
@@ -103,14 +107,14 @@ export default function PasswordGen() {
                         style={{padding: 10}}
                         icon={<Icon name="md-refresh" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={getPassword}
-                        title="GENERATE" />
+                        title="GENERATE NEW" />
                 </View>
                 <Divider style={styles.divider} />
                 <View style={styles.buttonContainer}>
                     <Button
                         style={{padding: 10}}
                         icon={<Icon name="md-save" size={20} style={{paddingRight: 10}} color="#ffffff" />}
-                        onPress={save}
+                        onPress={saveAccount}
                         title="SAVE DETAILS" />
                 </View>
             </View>

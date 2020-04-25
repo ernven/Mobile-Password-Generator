@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { Text, Input, Button } from 'react-native-elements';
+import { Text, Input, Button, Divider } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { firebaseAuth } from './firebase';
 
@@ -56,11 +56,10 @@ export default function UserLogin(props) {
                         onPress={login}
                         title="SIGN IN" />
                 <Button
-                    buttonStyle={{backgroundColor: '#d8db00'}}
                     style={{padding: 10}}
-                    icon={<Icon name="md-key" size={20} style={{paddingRight: 10}} color="#ffffff" />}
+                    icon={<Icon name="ios-key" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                     onPress={resetPassword}
-                    title="FORGOT PASSWORD" />
+                    title="RESET PASSWORD" />
                 <Divider style={styles.divider} />
                 <Button
                     buttonStyle={{backgroundColor: '#51c72a'}}
@@ -86,7 +85,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
       flex: 5,
       justifyContent: 'space-around',
-      width: '50%',
+      width: '60%',
       marginBottom: '15%'
     },
     divider: {

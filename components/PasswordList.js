@@ -2,16 +2,20 @@ import React, { useState } from 'react';
 import { View, Alert, FlatList } from 'react-native';
 import { Header, ListItem, Text } from 'react-native-elements';
 
-import { firebaseAuth, firebaseDB } from './firebase';
+import { firebaseDB } from './firebase';
 import ListItemDetails from './ListItemDetails';
 
 var moment = require('moment');
 
-export default function PasswordList() {
+export default function PasswordList(props) {
     const [credentialsList, setCredentialsList] = useState([]);
 
-    React.useEffect(() => {
-        firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid).on('value', snapshot => {
+    const url = '/users/' + props.route.params.uid;
+
+    React.useEffect(() => fetchAccounts(), []);
+
+    const fetchAccounts = () => {
+        firebaseDB.ref(url).on('value', snapshot => {
             const data = snapshot.val();
             if (data != undefined && data != null) {
                 const details = Object.entries(data).map(item => ({...item[1], key: item[0]}));
@@ -20,25 +24,13 @@ export default function PasswordList() {
                 setCredentialsList([]);
             }
         });
-    }, []);
-
-    const deleteItem = (key) => {
-        Alert.alert(
-            "Delete confirmation",
-            "Are you sure you want to remove the login details?\nThis action cannot be undone.",
-            [
-                {text: 'Cancel', style: 'cancel'},
-                {text: "OK",
-                    style: 'destructive',
-                    onPress: () => {                
-                        firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid + '/' + key).remove();
-                        Alert.alert("Login details removed");
-                    }
-                }
-            ],
-            {cancelable: false}
-        );
     };
+
+    const deleteItem = async (key) => {
+        await firebaseDB.ref(url + '/' + key).remove();
+        fetchAccounts();
+        Alert.alert("Success", "Login details removed");
+    }
 
     return (
         <View style={{height: '100%', flex: 1}}>
