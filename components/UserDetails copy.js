@@ -1,37 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { Header, Input, Button, Divider, Overlay } from 'react-native-elements';
+import { Header, Input, Button, Divider } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { firebaseAuth } from './firebase';
 import ReAuthorization from './ReAuthorization';
 
 export default function UserDetails() {
-    const [user, setUser] = useState({email: '', password: '', displayName: ''});
-    const [hidePassword, setHidePassword] = useState(true);
+    const [user, setUser] = useState({displayName: '', email: '', password: ''});
+    const [showPassword, setShowPassword] = useState(false);
     const [overlayVisible, setOverlayVisible] = useState(false);
-    const [isAuthorized, setIsAuthorized] = useState(false);
 
-    useEffect(() => fetchUser(), []);
+    useEffect(fetchUser, []);
 
     const fetchUser = () => {
         firebaseAuth.currentUser.reload();
         setUser({
+            displayName: firebaseAuth.currentUser.displayName,
             email: firebaseAuth.currentUser.email,
-            displayName: firebaseAuth.currentUser.displayName
+            password: firebaseAuth.currentUser.password
         });
-        console.log(user.password);
     };
+
+    const handleInputChange = (e) => setUser({...user, [e.target.name]: e.target.value});
 
     // Now we have a few functions for updating a user
     // Because some details are sensitive, we have to use a different method for updating
     const updateDetails = () => {
         if (firebaseAuth.currentUser.displayName !== user.displayName) {
-            updateDisplayName();
+            updateDisplayName;
         }
-        if (firebaseAuth.currentUser.email !== user.email ||
-                typeof user.password !== 'undefined') {
-            updateSensitiveDetails();
+        if (firebaseAuth.currentUser.email !== user.email &&
+                firebaseAuth.currentUser.password !== user.password) {
+            setOverlayVisible(true);
         }
     };
 
@@ -39,7 +40,7 @@ export default function UserDetails() {
         firebaseAuth.currentUser.updateProfile({
             displayName: user.displayName
         }).then(function() {
-            Alert.alert("Settings Updated", "Your display name has been correctly updated.");
+            Alert.alert("Settings Updated", "Your user settings have been correctly updated.");
             fetchUser;
         }).catch(function(error) {
             Alert.alert("An error occurred: " + error);
@@ -47,29 +48,25 @@ export default function UserDetails() {
     };
 
     const updateSensitiveDetails = () => {
-        if (isAuthorized) {
-            if (firebaseAuth.currentUser.email !== user.email) {
-                firebaseAuth.currentUser.updateEmail(user.email)
-                .then(() => {
-                    Alert.alert("Settings Updated", "Your email has been correctly updated.");
-                    fetchUser;
-                    verifyEmail;
-                }).catch((error) => {
-                    Alert.alert("An error occurred: " + error);
-                });
-            }
-            if (firebaseAuth.currentUser.password !== user.password) {
-                firebaseAuth.currentUser.updatePassword(user.password)
-                .then(() => {
-                    Alert.alert("Settings Updated", "Your password has been correctly updated.");
-                    fetchUser;
-                    verifyEmail;
-                }).catch((error) => {
-                    Alert.alert("An error occurred: " + error);
-                });
-            }
-        } else {
-            setOverlayVisible(true);
+        if (firebaseAuth.currentUser.email !== user.email) {
+            firebaseAuth.currentUser.updateEmail(user.email)
+            .then(() => {
+                Alert.alert("Settings Updated", "Your user settings have been correctly updated.");
+                fetchUser;
+                verifyEmail;
+            }).catch((error) => {
+                Alert.alert("An error occurred: " + error);
+            });
+        }
+        if (firebaseAuth.currentUser.password !== user.password) {
+            firebaseAuth.currentUser.updatePassword(user.password)
+            .then(() => {
+                Alert.alert("Settings Updated", "Your user settings have been correctly updated.");
+                fetchUser();
+                verifyEmail();
+            }).catch((error) => {
+                Alert.alert("An error occurred: " + error);
+            });
         }
     };
 
@@ -83,38 +80,23 @@ export default function UserDetails() {
     };
 
     const deleteAccount = () => {
-        if (isAuthorized) {
-            Alert.alert(
-                "Delete confirmation",
-                "Are you sure you want to delete your account?\nThis action cannot be undone.",
-                [
-                    {text: 'Cancel', style: 'cancel'},
-                    {text: "OK",
-                        style: 'destructive',
-                        onPress: () => {
-                            firebaseAuth.currentUser.delete()
-                            .then(() => {
-                                Alert.alert("User deleted", "You are now logged out of the system.");
-                            }).catch((error) => {
-                                Alert.alert("An error occurred: " + error);
-                            });
-                        }
-                    }
-                ],
-                {cancelable: false}
-            );
-        } else {
-            setOverlayVisible(true);
+        if (reAuth) {
+            firebaseAuth.currentUser.delete()
+            .then(() => {
+                Alert.alert("User deleted", "You are now logged out of the system.");
+            }).catch((error) => {
+                Alert.alert("An error occurred: " + error);
+            });
         }
     };
 
     // For some sensitive changes we have to re-authenticate the user.
-    // This function addresses that purpose
+    // This function is for that purpose
     const reAuthorize = (credentials) => {
         setOverlayVisible(false);
         firebaseAuth.currentUser.reauthenticateWithCredential(credentials)
         .then(() => {
-            setIsAuthorized(true);
+            updateSensitiveDetails();
         }).catch((error) => {
             Alert.alert("An error occurred: " + error);
         });
@@ -144,16 +126,8 @@ export default function UserDetails() {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <ReAuthorization reAuthorize={reAuthorize} overlayVisible={overlayVisible} />
             <View style={{flex: 1, height: '100%', alignItems: 'center'}}>
-                <Overlay
-                    isVisible={overlayVisible}
-                    height='50%'
-                    onBackdropPress={() => setOverlayVisible(false)}
-                    overlayStyle={{padding: 0}}
-                    overlayBackgroundColor='#f2f2f7'
-                >
-                    <ReAuthorization reAuthorize={reAuthorize} />        
-                </Overlay>
                 <Header
                     containerStyle={{backgroundColor: '#141414'}}
                     barStyle="light-content"
@@ -164,21 +138,22 @@ export default function UserDetails() {
                         placeholder="e-mail" 
                         label="Your e-mail address"
                         value={user.email}
-                        onChangeText={(value) => setUser({...user,  email: value})} />
+                        onChange={handleInputChange} />
                     <Input
-                        placeholder="Leave empty to keep current" 
-                        label="New password"
-                        value={user.password}
-                        onChangeText={(value) => setUser({...user,  password: value})}
-                        secureTextEntry={hidePassword}
-                        rightIcon={
-                            <Icon name="md-eye" size={20} onPress={() => setHidePassword(!hidePassword)} color="gray" />
-                        } />
+                        placeholder="Password" 
+                        label="Your password"
+                        value={user.pass}
+                        onChange={handleInputChange}
+                        secureTextEntry={showPassword} />
+                    <Button
+                        buttonStyle={{backgroundColor: 'transparent'}}
+                        icon={<Icon name="md-eye" size={20} style={{paddingLeft: 5, paddingRight: 5}} color="gray" />}
+                        onPress={setShowPassword(!showPassword)} />
                     <Input
                         placeholder="Display name" 
                         label="Your display name"
                         value={user.displayName}
-                        onChangeText={(value) => setUser({...user,  displayName: value})} />
+                        onChange={handleInputChange} />
                 </View>
                 <View style={styles.buttonContainer}>
                     <Button
@@ -187,8 +162,9 @@ export default function UserDetails() {
                         onPress={updateDetails}
                         title="UPDATE DETAILS" />
                     <Button
+                        buttonStyle={{backgroundColor: '#51c72a'}}
                         style={{padding: 10}}
-                        icon={<Icon name="md-mail" size={20} style={{paddingRight: 10}} color="#ffffff" />}
+                        icon={<Icon name="md-lock" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={verifyEmail}
                         title="VERIFY EMAIL" />
                     <Button
@@ -197,13 +173,13 @@ export default function UserDetails() {
                         icon={<Icon name="md-trash" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={deleteAccount}
                         title="DELETE ACCOUNT" />
-                        <Divider style={{backgroundColor: 'gray'}} />
-                        <Button
-                            buttonStyle={{backgroundColor: '#d43131'}}
-                            style={{padding: 10}}
-                            icon={<Icon name="ios-log-out" size={20} style={{paddingRight: 10}} color="#ffffff" />}
-                            onPress={logOut}
-                            title="LOG OUT" />
+                    <Divider style={styles.divider} />
+                    <Button
+                        buttonStyle={{backgroundColor: '#d43131'}}
+                        style={{padding: 10}}
+                        icon={<Icon name="ios-log-out" size={20} style={{paddingRight: 10}} color="#ffffff" />}
+                        onPress={logOut}
+                        title="LOG OUT" />
                 </View>
             </View>
         </TouchableWithoutFeedback>
@@ -215,13 +191,17 @@ const styles = StyleSheet.create({
       flex: 4,
       justifyContent: "space-around",
       width: '70%',
-      margin: 30,
-      marginBottom: '1%'
+      margin: 30
     },
     buttonContainer: {
       flex: 5,
-      justifyContent: 'space-around',
+      justifyContent: 'space-between',
       width: '55%',
-      marginBottom: '2%'
+      marginBottom: '10%'
+    },
+    divider: {
+        backgroundColor: 'gray',
+        marginLeft: 20,
+        marginRight: 20
     }
   });

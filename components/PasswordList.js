@@ -32,7 +32,7 @@ export default function PasswordList() {
                     style: 'destructive',
                     onPress: () => {                
                         firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid + '/' + key).remove();
-                        Alert.alert("Login details removed!");
+                        Alert.alert("Login details removed");
                     }
                 }
             ],

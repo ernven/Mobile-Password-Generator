@@ -10,3 +10,5 @@ var firebaseProject = firebase.initializeApp(firebaseConfig);
 export const firebaseDB = firebaseProject.database();
 
 export const firebaseAuth = firebaseProject.auth();
+
+export const firebaseEmailAuthProvider = firebase.auth.EmailAuthProvider;

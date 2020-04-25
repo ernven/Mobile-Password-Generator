@@ -9,7 +9,16 @@ export default function UserNew() {
     const [password, setPassword] = useState('');
 
     const signUp = () => {
-        firebaseAuth.createUserWithEmailAndPassword(email, password).catch(function(error) {
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+        .then((_) => {
+            firebaseAuth.currentUser.sendEmailVerification()
+            .then(() => {
+                Alert.alert("Email sent confirmation", "An email has been sent to your address with instructions on how to verify your account.");
+            }).catch((error) => {
+                Alert.alert("An error occurred: " + error);
+            });
+        })
+        .catch((error) => {
             var errorCode = error.code;
             var errorMessage = error.message;
             Alert.alert("An error occurred: " + errorCode + ". " + errorMessage);
@@ -38,7 +47,7 @@ export default function UserNew() {
                     style={{padding: 10}}
                     icon={<Icon name="md-person-add" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                     onPress={signUp}
-                    title="Sign Up" />
+                    title="SIGN UP" />
             </View>
         </View>
         </TouchableWithoutFeedback>

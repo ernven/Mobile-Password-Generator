@@ -51,7 +51,7 @@ export default function PasswordGen() {
         setUsername('');
         setPassword('');
         Keyboard.dismiss();
-        Alert.alert("Success!", "The login details have been saved.")
+        Alert.alert("Success", "The login details have been saved.")
     };
 
     return (
@@ -104,7 +104,7 @@ export default function PasswordGen() {
                         icon={<Icon name="md-refresh" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={getPassword}
                         title="GENERATE" />
-                </View>          
+                </View>
                 <Divider style={styles.divider} />
                 <View style={styles.buttonContainer}>
                     <Button
