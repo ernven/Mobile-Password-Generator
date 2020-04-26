@@ -3,7 +3,7 @@ import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'rea
 import { Header, Input, Divider, Button, CheckBox, Text, Slider } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { firebaseDB } from './firebase';
+import { firebaseDB } from '../firebase';
 
 export default function PasswordGen(props) {
     const [accountName, setAccountName] = useState('');
@@ -11,6 +11,7 @@ export default function PasswordGen(props) {
     const [password, setPassword] = useState('');
     const [alphanumOnly, setAlphanumOnly] = useState(false);
     const [length, setLength] = useState(12);
+    const [accNameError, setAccNameError] = useState('');
 
     useEffect(() => getPassword(), []);
 
@@ -44,13 +45,14 @@ export default function PasswordGen(props) {
 
     const saveAccount = () => {
         if (accountName === '') {
-            Alert.alert("Error", "The account name cannot be empty.");
+            setAccNameError("The account name cannot be empty.");
         } else {
             const currDate = new Date().toISOString();
             firebaseDB.ref('/users/' + props.route.params.uid).push(
                 { 'a': accountName, 'u': username, 'p': password, 'd': currDate }
             );
             setAccountName('');
+            setAccNameError('');
             setUsername('');
             getPassword();
             Keyboard.dismiss;
@@ -71,7 +73,8 @@ export default function PasswordGen(props) {
                         placeholder="Enter the service provider" 
                         label="Account Name"
                         onChangeText={(accountName) => setAccountName(accountName)}
-                        value={accountName} />
+                        value={accountName}
+                        errorMessage={accNameError} />
                     <Input
                         placeholder="Enter your username or email" 
                         label="User ID"

@@ -3,7 +3,7 @@ import { View, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Text, Input, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { firebaseEmailAuthProvider } from './firebase';
+import { firebaseEmailAuthProvider } from '../firebase';
 
 export default function ListItemDetails(props) {
     const [email, setEmail] = useState('');

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Alert, FlatList } from 'react-native';
 import { Header, ListItem, Text } from 'react-native-elements';
 
-import { firebaseDB } from './firebase';
+import { firebaseDB } from '../firebase';
 import ListItemDetails from './ListItemDetails';
 
 var moment = require('moment');

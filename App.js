@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+
 import { firebaseAuth } from './components/firebase';
-import * as LocalAuthentication from 'expo-local-authentication';
 
 // This enables the native screen optimization for each system (iOS and Android)
 import { enableScreens } from 'react-native-screens';
 
-import LoadingScreen from './components/LoadingScreen';
-import UserLogin from './components/UserLogin';
-import UserNew from './components/UserNew';
-import MainScreen from './components/MainScreen';
+import LoadingScreen from './components/LocalAuth';
+import UserLogin from './components/LoggedOutScreens/UserLogin';
+import UserNew from './components/LoggedOutScreens/UserNew';
+import MainScreen from './components/LoggedInScreens/MainScreen';
 
 enableScreens();
 
@@ -39,24 +39,18 @@ export default function App() {
           setLoading(false);
         } else {
           setUser(currUser);
-          authorize();
         }
       }
     })
   };
 
-  // With this function we handle the local auth using the device's biometric auth or passcode (as available)
-  const options = { promptMessage: "Please authenticate to continue" };
-
-  const authorize = async () => {
-    const result = await LocalAuthentication.authenticateAsync(options);
-    if (result.success) {
-      setLoading(false);
-    }
-  }
+  // This is for handling the local authorization
+  const handleAuthSuccess = async () => {
+    setLoading(false);
+  };
 
   if (loading) {
-    return <LoadingScreen authorize={authorize} />;
+    return <LoadingScreen handleAuthSuccess={handleAuthSuccess} />;
   } else if (user === null) {
     return (
       <NavigationContainer>

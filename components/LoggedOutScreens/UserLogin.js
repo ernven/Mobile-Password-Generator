@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Text, Input, Button, Divider } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { firebaseAuth } from './firebase';
+import { firebaseAuth } from '../firebase';
 
 export default function UserLogin(props) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
 
     const login = () => {
+        setEmailError('');
+        setPasswordError('');
         firebaseAuth.signInWithEmailAndPassword(email, password)
         .then(() => {
             if (!firebaseAuth.currentUser.emailVerified) {
@@ -16,9 +20,15 @@ export default function UserLogin(props) {
             }
         })
         .catch((error) => {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            Alert.alert("An error occurred: " + errorCode + ". " + errorMessage);
+            if (error.code.includes("email")) {
+                setEmailError("The email address is not valid");
+            } else if (error.message.includes("user record")) {
+                setEmailError("Email address not found");
+            } else if (error.code.includes("wrong-password")) {
+                setPasswordError("Password does not match");
+            } else {
+                Alert.alert(error.code + ": " + error.message);
+            }
         });
     };
 
@@ -41,13 +51,15 @@ export default function UserLogin(props) {
                         placeholder="e-mail" 
                         label="Your e-mail address"
                         onChangeText={(email) => setEmail(email)}
-                        value={email} />
+                        value={email}
+                        errorMessage={emailError} />
                     <Input
                         placeholder="Password" 
                         label="Password"
                         onChangeText={(password) => setPassword(password)}
                         value={password}
-                        secureTextEntry={true} />
+                        secureTextEntry={true}
+                        errorMessage={passwordError} />
                 </View>
                 <View style={styles.buttonContainer}>
                     <Button
@@ -77,7 +89,7 @@ const styles = StyleSheet.create({
     inputContainer: {
       flex: 4,
       justifyContent: "space-around",
-      width: '70%',
+      width: '75%',
       marginTop: 30,
       marginLeft: 20,
       marginRight: 20

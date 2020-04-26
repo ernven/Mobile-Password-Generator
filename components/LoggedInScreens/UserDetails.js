@@ -3,7 +3,7 @@ import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'rea
 import { Header, Input, Button, Divider, Overlay } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { firebaseAuth } from './firebase';
+import { firebaseAuth } from '../firebase';
 import ReAuthorization from './ReAuthorization';
 
 export default function UserDetails() {
@@ -11,6 +11,10 @@ export default function UserDetails() {
     const [hidePassword, setHidePassword] = useState(true);
     const [overlayVisible, setOverlayVisible] = useState(false);
     const [isAuthorized, setIsAuthorized] = useState(false);
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+
+    const isVerified = firebaseAuth.currentUser.emailVerified;
 
     useEffect(() => fetchUser(), []);
 
@@ -52,9 +56,16 @@ export default function UserDetails() {
                 .then(() => {
                     Alert.alert("Settings Updated", "Your email has been correctly updated.");
                     fetchUser();
+                    setEmailError('');
                     verifyEmail();
                 }).catch((error) => {
-                    Alert.alert("An error occurred: " + error);
+                    if (error.message.includes("formatted")) {
+                        setEmailError("The email address is not valid");
+                    } else if (error.message.includes("already")) {
+                        setEmailError("Email address already in use");
+                    } else {
+                        Alert.alert(error.code + ": " + error.message);
+                    }
                 });
             }
             if (firebaseAuth.currentUser.password !== user.password) {
@@ -63,7 +74,11 @@ export default function UserDetails() {
                     Alert.alert("Settings Updated", "Your password has been correctly updated.");
                     fetchUser();
                 }).catch((error) => {
-                    Alert.alert("An error occurred: " + error);
+                    if (error.message.includes("6 characters")) {
+                        setPasswordError("Password must be at least 6 characters long");
+                    } else {
+                        Alert.alert(error);
+                    }
                 });
             }
         } else {
@@ -163,13 +178,15 @@ export default function UserDetails() {
                         placeholder="e-mail" 
                         label="Your e-mail address"
                         value={user.email}
-                        onChangeText={(value) => setUser({...user,  email: value})} />
+                        onChangeText={(value) => setUser({...user,  email: value})}
+                        errorMessage={emailError} />
                     <Input
                         placeholder="Leave empty to keep current" 
                         label="New password"
                         value={user.password}
                         onChangeText={(value) => setUser({...user,  password: value})}
                         secureTextEntry={hidePassword}
+                        errorMessage={passwordError}
                         rightIcon={
                             <Icon name="md-eye" size={20} onPress={() => setHidePassword(!hidePassword)} color="gray" />
                         } />
@@ -185,11 +202,11 @@ export default function UserDetails() {
                         icon={<Icon name="md-save" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={updateDetails}
                         title="UPDATE DETAILS" />
-                    <Button
+                    { !isVerified && <Button
                         style={{padding: 10}}
                         icon={<Icon name="md-mail" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                         onPress={verifyEmail}
-                        title="VERIFY EMAIL" />
+                        title="VERIFY EMAIL" /> }
                     <Button
                         buttonStyle={{backgroundColor: '#d43131'}}
                         style={{padding: 10}}
