@@ -18,8 +18,10 @@ export default function LoadingScreen(props) {
                 props.handleAuthSuccess();
             }
         };
-        auth();
-    }, [trigger]);
+        if (props.user !== null) {
+            auth();
+        }
+    }, [trigger, props.user]);
 
     return (
         <View style={{flex: 1,height: '100%', alignItems: 'center', backgroundColor: 'black'}}>

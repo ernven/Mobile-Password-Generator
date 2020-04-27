@@ -23,7 +23,10 @@ export default function UserNew() {
         .then(() => {
             firebaseAuth.currentUser.sendEmailVerification()
             .then(() => {
-                Alert.alert("Email sent confirmation", "An email has been sent to your address with instructions on how to verify your account.");
+                Alert.alert(
+                    "Email sent confirmation",
+                    "An email has been sent to your address with instructions on how to verify your account."
+                );
             }).catch((error) => {
                 Alert.alert("An error occurred: " + error);
             });

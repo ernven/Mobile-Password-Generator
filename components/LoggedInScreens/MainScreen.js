@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { Alert } from 'react-native';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -18,12 +17,6 @@ enableScreens();
 const tab = createBottomTabNavigator();
 
 export default function App() {
-
-    useEffect(() => {
-        if (!firebaseAuth.currentUser.emailVerified) {
-            Alert.alert("Email not verified", "Please check your inbox or re-send a verification email by going to the user panel.");
-        }
-    }, []);
 
     return (
         <NavigationContainer>

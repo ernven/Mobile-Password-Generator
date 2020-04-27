@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
 import { Text, Input, Button, Overlay } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 export default function ListItemDetails(props) {
-    const [email, setEmail] = useState(props.password);
+    const [email, setEmail] = useState('');
     const [visible, setVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const openHandler = () => {
         setVisible(true);
@@ -14,10 +15,20 @@ export default function ListItemDetails(props) {
     const resetPassword = () => {
         props.firebaseAuth.sendPasswordResetEmail(email)
         .then(() => {
-            Alert.alert("Password Reset Confirmation", "An email has been sent to your address with instructions on how to reset your password.");
+            Alert.alert(
+                "Password Reset Confirmation",
+                "An email has been sent to your address with instructions on how to reset your password.",
+                [{text: "OK", onPress: () => setVisible(false)}]
+            );
         })
         .catch((error) => {
-            Alert.alert("An error occurred: " + error);
+            if (error.code.includes('not-found')) {
+                setErrorMessage('The email address was not found');
+            } else if (error.code.includes('invalid-email')) {
+                setErrorMessage('Invalid email');
+            } else {
+                Alert.alert("An error occurred: " + error);
+            }
         });
     };
 
@@ -28,7 +39,7 @@ export default function ListItemDetails(props) {
                 style={{padding: 10}}
                 icon={<Icon name="ios-key" size={20} style={{paddingRight: 10}} color="#ffffff" />}
                 onPress={openHandler}
-                title="RESET PASSWORD" />        
+                title="RESET PASSWORD" />
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                 <Overlay
                     isVisible={visible}
@@ -48,7 +59,8 @@ export default function ListItemDetails(props) {
                                 placeholder="e-mail"
                                 label="Your e-mail address"
                                 onChangeText={(email) => setEmail(email)}
-                                value={email} />
+                                value={email}
+                                errorMessage={errorMessage} />
                         </View>
                         <View  style={{flex: 2, justifyContent: 'center'}}>
                             <Button

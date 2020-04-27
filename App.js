@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Alert } from 'react-native';
 
 import { firebaseAuth } from './components/firebase';
 
@@ -25,7 +26,11 @@ export default function App() {
         setLoading(false);
       } else {
         if (loggedOut) {
-          setUser(currUser);
+          Alert.alert(
+            "Email not verified",
+            "Please check your inbox or re-send a verification email by going to the user panel.",
+            [{text: "OK", onPress: () => setUser(currUser)}]
+          );
           setLoading(false);
         } else {
           setUser(currUser);
