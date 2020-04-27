@@ -5,22 +5,19 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import * as LocalAuthentication from 'expo-local-authentication';
 
 export default function LoadingScreen(props) {
-    const [trigger, setTrigger] = useState();
+    const [trigger, setTrigger] = useState(true);
 
     const options = { promptMessage: "Please authenticate to unlock" };
-
-    useEffect(() => setTrigger(true), []);
 
     // With this function we handle the local auth
     // using the device's biometric auth or passcode (as available)
     useEffect(() => {
-        console.log("fired");
         const auth = async () => {
             const result = await LocalAuthentication.authenticateAsync(options);
             if (result.success) {
                 props.handleAuthSuccess();
             }
-        }
+        };
         auth();
     }, [trigger]);
 

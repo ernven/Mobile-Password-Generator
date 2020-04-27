@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 
 import { firebaseAuth } from './components/firebase';
 
-// This enables the native screen optimization for each system (iOS and Android)
-import { enableScreens } from 'react-native-screens';
-
 import LoadingScreen from './components/LocalAuth';
-import UserLogin from './components/LoggedOutScreens/UserLogin';
-import UserNew from './components/LoggedOutScreens/UserNew';
+import SignInPortal from './components/LoggedOutScreens/SignInPortal';
 import MainScreen from './components/LoggedInScreens/MainScreen';
-
-enableScreens();
-
-const stack = createStackNavigator();
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -50,16 +40,9 @@ export default function App() {
   };
 
   if (loading) {
-    return <LoadingScreen handleAuthSuccess={handleAuthSuccess} />;
+    return <LoadingScreen handleAuthSuccess={handleAuthSuccess} user={user} />;
   } else if (user === null) {
-    return (
-      <NavigationContainer>
-        <stack.Navigator mode={'modal'} >
-          <stack.Screen name="Login" component={UserLogin} options={{headerShown: false}} />
-          <stack.Screen name="SignUp" component={UserNew} options={{title: ''}} />
-        </stack.Navigator>
-      </NavigationContainer>
-    );
+    return <SignInPortal />;
   } else {
     return <MainScreen />;
   }

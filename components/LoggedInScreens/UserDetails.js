@@ -4,7 +4,7 @@ import { Header, Input, Button, Divider, Overlay } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { firebaseAuth } from '../firebase';
-import ReAuthorization from './ReAuthorization';
+import ReAuthorization from '../LoginOverlay';
 
 export default function UserDetails() {
     const [user, setUser] = useState({email: '', password: '', displayName: ''});
@@ -123,15 +123,9 @@ export default function UserDetails() {
 
     // For some sensitive changes we have to re-authenticate the user.
     // This function addresses that purpose
-    const reAuthorize = (credentials) => {
-        setOverlayVisible(false);
-        firebaseAuth.currentUser.reauthenticateWithCredential(credentials)
-        .then(() => {
-            setIsAuthorized(true);
-            Alert.alert("Login successful", "Please confirm your action.");
-        }).catch((error) => {
-            Alert.alert("An error occurred: " + error);
-        });
+    const reAuthorized = () => {
+        setIsAuthorized(true);
+        Alert.alert("Login successful", "Please confirm your action.", [{text: "OK", onPress: () => setOverlayVisible(false)}]);
     };
 
     const logOut = () => {
@@ -166,7 +160,7 @@ export default function UserDetails() {
                     overlayStyle={{padding: 0}}
                     overlayBackgroundColor='#f2f2f7'
                 >
-                    <ReAuthorization reAuthorize={reAuthorize} />        
+                    <ReAuthorization authorized={reAuthorized} firebaseAuth={firebaseAuth} />        
                 </Overlay>
                 <Header
                     containerStyle={{backgroundColor: '#141414'}}
