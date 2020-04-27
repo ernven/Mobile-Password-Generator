@@ -39,7 +39,6 @@ export default function UserNew() {
                 Alert.alert(error.code + ": " + error.message);
             }
         });
-        setV
     };
 
     return (
