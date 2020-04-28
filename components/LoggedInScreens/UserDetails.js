@@ -3,7 +3,7 @@ import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'rea
 import { Header, Input, Button, Divider, Overlay } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { firebaseAuth } from '../firebase';
+import { firebaseAuth, firebaseDB } from '../firebase';
 import ReAuthorization from '../LoginOverlay';
 
 export default function UserDetails() {
@@ -95,7 +95,7 @@ export default function UserDetails() {
         });
     };
 
-    const deleteAccount = () => {
+    const deletePrompt = () => {
         if (isAuthorized) {
             Alert.alert(
                 "Delete confirmation",
@@ -104,14 +104,7 @@ export default function UserDetails() {
                     {text: 'Cancel', style: 'cancel'},
                     {text: "OK",
                         style: 'destructive',
-                        onPress: () => {
-                            firebaseAuth.currentUser.delete()
-                            .then(() => {
-                                Alert.alert("User deleted", "You are now logged out of the system.");
-                            }).catch((error) => {
-                                Alert.alert("An error occurred: " + error);
-                            });
-                        }
+                        onPress: () => deleteAccount()
                     }
                 ],
                 {cancelable: false}
@@ -121,11 +114,30 @@ export default function UserDetails() {
         }
     };
 
+    // This deletes the user and its data
+    const deleteAccount = () => {
+        firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid).remove()
+        .then(() => {
+            firebaseAuth.currentUser.delete()
+            .then(() => {
+                Alert.alert("User deleted", "You are now logged out of the system.");
+            }).catch((error) => {
+                Alert.alert("An error occurred: " + error);
+            });
+        }).catch((error) => {
+            Alert.alert("An error occurred: " + error);
+        });
+    };
+
     // For some sensitive changes we have to re-authenticate the user.
     // This function addresses that purpose
     const reAuthorized = () => {
         setIsAuthorized(true);
-        Alert.alert("Login successful", "Please confirm your action.", [{text: "OK", onPress: () => setOverlayVisible(false)}]);
+        Alert.alert(
+            "Login successful",
+            "Please confirm your action.",
+            [{text: "OK", onPress: () => setOverlayVisible(false)}]
+        );
     };
 
     const logOut = () => {
@@ -205,7 +217,7 @@ export default function UserDetails() {
                         buttonStyle={{backgroundColor: '#d43131'}}
                         style={{padding: 10}}
                         icon={<Icon name="md-trash" size={20} style={{paddingRight: 10}} color="#ffffff" />}
-                        onPress={deleteAccount}
+                        onPress={deletePrompt}
                         title="DELETE ACCOUNT" />
                         <Divider style={{backgroundColor: 'gray'}} />
                         <Button

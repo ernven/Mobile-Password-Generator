@@ -27,7 +27,7 @@ export default function App() {
       } else {
         if (loggedOut) {
           Alert.alert(
-            "Email not verified",
+            "Email not yet verified",
             "Please check your inbox or re-send a verification email by going to the user panel.",
             [{text: "OK", onPress: () => setUser(currUser)}]
           );

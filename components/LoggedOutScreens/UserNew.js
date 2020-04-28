@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Text, Input, Button, Overlay } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -22,12 +22,7 @@ export default function UserNew() {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
         .then(() => {
             firebaseAuth.currentUser.sendEmailVerification()
-            .then(() => {
-                Alert.alert(
-                    "Email sent confirmation",
-                    "An email has been sent to your address with instructions on how to verify your account."
-                );
-            }).catch((error) => {
+            .catch((error) => {
                 Alert.alert("An error occurred: " + error);
             });
         })
