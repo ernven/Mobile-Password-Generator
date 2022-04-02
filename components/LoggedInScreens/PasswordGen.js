@@ -1,124 +1,159 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { Header, Input, Divider, Button, CheckBox, Text, Slider } from 'react-native-elements';
+import { Input, Divider, Button, CheckBox, Text } from 'react-native-elements';
+import Slider from '@react-native-community/slider';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { firebaseDB } from '../firebase';
+import { getDatabase, ref, push } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 
-export default function PasswordGen(props) {
-  const [accountName, setAccountName] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+const auth = getAuth();
+const db = getDatabase();
+
+
+// First provider uses url like https://password.markei.nl/random.json?symbols=false&min=8&max=8
+// Second provider uses this https://api.random.org/json-rpc/2/invoke and some request parameters
+// I have used the second for this project. The personal apiKey is removed for publishing of source code.
+
+const apiUrl = 'https://api.random.org/json-rpc/2/invoke';
+
+export default function PasswordGen() {
+  const [accountDetails, setAccountDetails] = useState({
+    name: '',
+    username: '',
+    password: ''
+  })
   const [alphanumOnly, setAlphanumOnly] = useState(false);
   const [length, setLength] = useState(12);
   const [accNameError, setAccNameError] = useState('');
 
-  useEffect(() => getPassword(), []);
+  const url = '/users/' + auth.currentUser.uid;
 
-  const getPassword = () => {
-    // First provider uses url like https://password.markei.nl/random.json?symbols=false&min=8&max=8
-    // Second provider uses this https://api.random.org/json-rpc/2/invoke and some request parameters
-    // I have used the second for this project. The personal apiKey is removed for publishing of source code.
-    let characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&*()=-_.';
-    if (alphanumOnly) {
-      characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    }
-    fetch('https://api.random.org/json-rpc/2/invoke', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        "jsonrpc": "2.0",
-        "method": "generateStrings",
-        "params": {
-          "apiKey": "",
-          "n": 1,
-          "length": length,
-          "characters": characters
-        },
-        "id": 100
+  useEffect(() => setPassword(), []);
+
+  const getPassword = async () => {
+
+    let characters = alphanumOnly ?
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' :
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&*()=-_.';
+
+    const { result, error } = await fetch(
+      apiUrl,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          'jsonrpc': '2.0',
+          'method': 'generateStrings',
+          'params': {
+            'apiKey': '',
+            'n': 1,
+            'length': length,
+            'characters': characters
+          },
+          'id': 100
+        })
       })
-    })
-      .then((response) => response.json())
-      .then((responseJSON) => setPassword(responseJSON.result.random.data[0]))
-      .catch((error) => Alert.alert('Error', error))
+      .then(response => response.json())
+
+    if (error) {
+      console.log(error);
+      return '';
+    }
+
+    if (result?.random?.data[0]) {
+      return (result.random.data[0]);
+    }
   };
 
-  const saveAccount = () => {
-    if (accountName === '') {
-      setAccNameError("The account name cannot be empty.");
+  const setPassword = async () => {
+    const password = await getPassword();
+    setAccountDetails({...accountDetails, password: password});
+  }
+
+  const saveAccount = async () => {
+    if (accountDetails.name === '') {
+      setAccNameError('The account name cannot be empty.');
     } else {
       const currDate = new Date().toISOString();
-      firebaseDB.ref('/users/' + props.route.params.uid).push(
-        { 'a': accountName, 'u': username, 'p': password, 'd': currDate }
-      );
-      setAccountName('');
-      setAccNameError('');
-      setUsername('');
-      getPassword();
-      Keyboard.dismiss;
-      Alert.alert("Success", "The login details have been saved.");
+      const entry = {...accountDetails, date: currDate};
+      
+      await push(ref(db, url), entry);
+
+      return handleAuthSuccess();
     }
   };
+
+  const handleAuthSuccess = () => {
+
+    setAccountDetails({
+      name: '',
+      username: '',
+      password: ''
+    });
+
+    setAccNameError('');
+
+    Keyboard.dismiss;
+    Alert.alert('Success', 'The login details have been saved.');
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={{ flex: 1, height: '100%' }}>
-        <Header
-          containerStyle={{ backgroundColor: '#141414' }}
-          barStyle="light-content"
-          centerComponent={{ text: 'NEW CREDENTIALS', style: { color: '#ffffff', fontWeight: '600' } }}
-        />
+
         <View style={styles.inputContainer}>
           <Input
-            placeholder="Enter the service provider"
-            label="Account Name"
-            onChangeText={(accountName) => setAccountName(accountName)}
-            value={accountName}
+            placeholder='Enter the service provider'
+            label='Account Name'
+            onChangeText={newVal => setAccountDetails({...accountDetails, name: newVal})}
+            value={accountDetails.name}
             errorMessage={accNameError} />
           <Input
-            placeholder="Enter your username or email"
-            label="User ID"
-            onChangeText={(username) => setUsername(username)}
-            value={username} />
+            placeholder='Enter your username or email'
+            label='User ID'
+            onChangeText={newVal => setAccountDetails({...accountDetails, username: newVal})}
+            value={accountDetails.username} />
           <Input
-            label="Password"
+            label='Password'
             disabled={true}
-            value={password} />
+            value={accountDetails.password} />
           <CheckBox
             title='Letters and numbers only'
-            containerStyle={{ backgroundColor: 'transparent' }}
+            containerStyle={{ backgroundColor: 'transparent', paddingTop: 0, paddingBottom: '6%' }}
             textStyle={{ color: 'gray' }}
-            iconType="material"
+            iconType='material'
             checkedIcon='check-box'
             uncheckedIcon='check-box-outline-blank'
             checkedColor='green'
             checked={alphanumOnly}
             onPress={() => setAlphanumOnly(!alphanumOnly)} />
+
           <Text style={{ color: 'gray' }}>Password length:</Text>
           <Slider
             minimumValue={8}
             maximumValue={24}
             step={1}
             thumbTintColor='#141414'
+            style={{paddingVertical: '8%'}}
             value={length}
-            onValueChange={(length) => setLength(length)} />
+            onValueChange={length => setLength(length)} />
           <Text style={{ color: 'gray' }}>Current: {length}</Text>
         </View>
+        
         <View style={styles.buttonContainer}>
           <Button
             buttonStyle={{ backgroundColor: '#51c72a' }}
             style={{ padding: 10 }}
-            icon={<Icon name="md-refresh" size={20} style={{ paddingRight: 10 }} color="#ffffff" />}
-            onPress={getPassword}
-            title="GENERATE NEW" />
-        </View>
+            icon={<Icon name='md-refresh' size={20} style={{ paddingRight: 10 }} color='#ffffff' />}
+            onPress={setPassword}
+            title='Generate New' />
         <Divider style={styles.divider} />
-        <View style={styles.buttonContainer}>
           <Button
-            style={{ padding: 10 }}
-            icon={<Icon name="md-save" size={20} style={{ paddingRight: 10 }} color="#ffffff" />}
+            style={{ padding: 10, borderRadius: 20 }}
+            icon={<Icon name='md-save' size={20} style={{ paddingRight: 10 }} color='#ffffff' />}
             onPress={saveAccount}
-            title="SAVE DETAILS" />
+            title='Save Details' />
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -127,20 +162,15 @@ export default function PasswordGen(props) {
 
 const styles = StyleSheet.create({
   inputContainer: {
-    flex: 6,
-    justifyContent: "space-between",
-    marginTop: 30,
-    marginLeft: 40,
-    marginRight: 40
+    marginVertical: '10%',
+    marginHorizontal: '5%'
   },
   buttonContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    margin: 30
+    marginHorizontal: '7%'
   },
   divider: {
     backgroundColor: 'gray',
-    marginLeft: 20,
-    marginRight: 20
+    marginHorizontal: '3%',
+    marginVertical: '5%'
   }
 });

@@ -1,102 +1,97 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { Header, Input, Button, Divider, Overlay } from 'react-native-elements';
+import { Input, Button, Divider } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { firebaseAuth, firebaseDB } from '../firebase';
-import ReAuthorization from '../LoginOverlay';
+import { getAuth, updateProfile, updateEmail, sendEmailVerification, deleteUser } from 'firebase/auth';
+
+import ReAuthorization from '../LoggedOutScreens/LoginOverlay';
+import handleError from '../../utils/error-handler';
+
+const auth = getAuth();
 
 export default function UserDetails() {
   const [user, setUser] = useState({ email: '', password: '', displayName: '' });
+  const [errors, setErrors] = useState({emailError: '', passwordError: ''});
+
   const [hidePassword, setHidePassword] = useState(true);
   const [overlayVisible, setOverlayVisible] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [authorized, setAuthorized] = useState(false);
 
-  const isVerified = firebaseAuth.currentUser.emailVerified;
+  const isVerified = auth.currentUser.emailVerified;
 
   useEffect(() => fetchUser(), []);
 
   const fetchUser = () => {
-    firebaseAuth.currentUser.reload();
+    auth.currentUser.reload();
     setUser({
-      email: firebaseAuth.currentUser.email,
-      displayName: firebaseAuth.currentUser.displayName
+      email: auth.currentUser.email,
+      displayName: auth.currentUser.displayName
     });
   };
 
   // Now we have a few functions for updating a user
   // Because some details are sensitive, we have to use a different method for updating
-  const updateDetails = () => {
-    if (firebaseAuth.currentUser.displayName !== user.displayName) {
+  const updateUserDetails = () => {
+    if (auth.currentUser.displayName !== user.displayName) {
       updateDisplayName();
     }
-    if (firebaseAuth.currentUser.email !== user.email ||
+    if (auth.currentUser.email !== user.email ||
       typeof user.password !== 'undefined') {
       updateSensitiveDetails();
     }
   };
 
   const updateDisplayName = () => {
-    firebaseAuth.currentUser.updateProfile({
-      displayName: user.displayName
-    }).then(function () {
-      Alert.alert("Settings Updated", "Your display name has been correctly updated.");
-      fetchUser();
-    }).catch(function (error) {
-      Alert.alert("An error occurred: " + error);
-    });
+    updateProfile(auth.currentUser, { displayName: user.displayName })
+      .then(() => {
+        Alert.alert("Settings Updated", "Your display name has been correctly updated.");
+        fetchUser();
+      })
+      .catch(error => Alert.alert("An error occurred: " + error));
   };
 
   const updateSensitiveDetails = () => {
-    if (isAuthorized) {
-      if (firebaseAuth.currentUser.email !== user.email) {
-        firebaseAuth.currentUser.updateEmail(user.email)
+    if (!authorized) {
+      setOverlayVisible(true);
+    } else {
+      if (auth.currentUser.email !== user.email) {
+        updateEmail(auth.currentUser, user.email)
           .then(() => {
             Alert.alert("Settings Updated", "Your email has been correctly updated.");
             fetchUser();
-            setEmailError('');
+            setErrors({...errors, emailError: ''});
             verifyEmail();
-          }).catch((error) => {
-            if (error.message.includes("formatted")) {
-              setEmailError("The email address is not valid");
-            } else if (error.message.includes("already")) {
-              setEmailError("Email address already in use");
-            } else {
-              Alert.alert(error.code + ": " + error.message);
-            }
-          });
+          })
+          .catch(error => setErrors(handleError(error.message)));
       }
-      if (firebaseAuth.currentUser.password !== user.password) {
-        firebaseAuth.currentUser.updatePassword(user.password)
+
+      if (auth.currentUser.password !== user.password) {
+        updatePassword(user, user.password)
           .then(() => {
             Alert.alert("Settings Updated", "Your password has been correctly updated.");
             fetchUser();
-          }).catch((error) => {
-            if (error.message.includes("6 characters")) {
-              setPasswordError("Password must be at least 6 characters long");
-            } else {
-              Alert.alert(error);
-            }
-          });
+            setErrors({...errors, passwordError: ''});
+          })
+          .catch(error => setErrors(handleError(error.message)));
       }
-    } else {
-      setOverlayVisible(true);
     }
   };
 
   const verifyEmail = () => {
-    firebaseAuth.currentUser.sendEmailVerification()
+    sendEmailVerification(auth.currentUser)
       .then(() => {
-        Alert.alert("Email sent confirmation", "An email has been sent to your address with instructions on how to verify your account.");
-      }).catch((error) => {
-        Alert.alert("An error occurred: " + error);
-      });
+        Alert.alert("Email sent confirmation",
+          "An email has been sent to your address with instructions on how to verify your account.");
+      })
+      .catch(error => Alert.alert("An error occurred: " + error));
   };
 
   const deletePrompt = () => {
-    if (isAuthorized) {
+
+    if (!authorized) {
+      setOverlayVisible(true);
+    } else {
       Alert.alert(
         "Delete confirmation",
         "Are you sure you want to delete your account?\nThis action cannot be undone.",
@@ -110,30 +105,22 @@ export default function UserDetails() {
         ],
         { cancelable: false }
       );
-    } else {
-      setOverlayVisible(true);
     }
   };
 
   // This deletes the user and its data
   const deleteAccount = () => {
-    firebaseDB.ref('/users/' + firebaseAuth.currentUser.uid).remove()
+    deleteUser(auth.currentUser)
       .then(() => {
-        firebaseAuth.currentUser.delete()
-          .then(() => {
-            Alert.alert("User deleted", "You are now logged out of the system.");
-          }).catch((error) => {
-            Alert.alert("An error occurred: " + error);
-          });
-      }).catch((error) => {
-        Alert.alert("An error occurred: " + error);
-      });
+        Alert.alert("User deleted", "You are now logged out of the system.");
+      })
+      .catch(error => Alert.alert("An error occurred: " + error));
   };
 
   // For some sensitive changes we have to re-authenticate the user.
   // This function addresses that purpose
-  const reAuthorized = () => {
-    setIsAuthorized(true);
+  const reAuthorize = () => {
+    setAuthorized(true);
     Alert.alert(
       "Login successful",
       "Please confirm your action.",
@@ -151,12 +138,9 @@ export default function UserDetails() {
           text: "OK",
           style: 'destructive',
           onPress: () => {
-            firebaseAuth.signOut()
-              .then(() => {
-                Alert.alert("You have successfully signed out.");
-              }).catch((error) => {
-                Alert.alert("An error occurred: " + error);
-              });
+            auth.signOut()
+              .then(() => Alert.alert("You have successfully signed out."))
+              .catch(error => Alert.alert("An error occurred: " + error));
           }
         }
       ],
@@ -164,37 +148,27 @@ export default function UserDetails() {
     );
   };
 
+  // SMALLER COMPONENTS??
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={{ flex: 1, height: '100%', alignItems: 'center' }}>
-        <Overlay
-          isVisible={overlayVisible}
-          height='50%'
-          onBackdropPress={() => setOverlayVisible(false)}
-          overlayStyle={{ padding: 0 }}
-          overlayBackgroundColor='#f2f2f7'
-        >
-          <ReAuthorization authorized={reAuthorized} firebaseAuth={firebaseAuth} />
-        </Overlay>
-        <Header
-          containerStyle={{ backgroundColor: '#141414' }}
-          barStyle="light-content"
-          centerComponent={{ text: 'USER DETAILS', style: { color: '#ffffff', fontWeight: '600' } }}
-        />
+
+        {overlayVisible ? <ReAuthorization reAuthorize={reAuthorize} isCancellable={false} /> : null}
+
         <View style={styles.inputContainer}>
           <Input
             placeholder="e-mail"
             label="Your e-mail address"
             value={user.email}
-            onChangeText={(value) => setUser({ ...user, email: value })}
-            errorMessage={emailError} />
+            onChangeText={value => setUser({ ...user, email: value })}
+            errorMessage={errors.emailError} />
           <Input
             placeholder="Leave empty to keep current"
             label="New password"
             value={user.password}
-            onChangeText={(value) => setUser({ ...user, password: value })}
+            onChangeText={value => setUser({ ...user, password: value })}
             secureTextEntry={hidePassword}
-            errorMessage={passwordError}
+            errorMessage={errors.passwordError}
             rightIcon={
               <Icon name="md-eye" size={20} onPress={() => setHidePassword(!hidePassword)} color="gray" />
             } />
@@ -202,13 +176,14 @@ export default function UserDetails() {
             placeholder="Display name"
             label="Your display name"
             value={user.displayName}
-            onChangeText={(value) => setUser({ ...user, displayName: value })} />
+            onChangeText={value => setUser({ ...user, displayName: value })} />
         </View>
+
         <View style={styles.buttonContainer}>
           <Button
             style={{ padding: 10 }}
             icon={<Icon name="md-save" size={20} style={{ paddingRight: 10 }} color="#ffffff" />}
-            onPress={updateDetails}
+            onPress={updateUserDetails}
             title="UPDATE DETAILS" />
           {!isVerified && <Button
             style={{ padding: 10 }}
@@ -238,14 +213,14 @@ const styles = StyleSheet.create({
   inputContainer: {
     flex: 4,
     justifyContent: "space-around",
-    width: '70%',
-    margin: 30,
+    width: '80%',
+    marginTop: 40,
     marginBottom: '1%'
   },
   buttonContainer: {
     flex: 5,
     justifyContent: 'space-around',
-    width: '55%',
-    marginBottom: '2%'
+    width: '65%',
+    marginBottom: '5%'
   }
 });

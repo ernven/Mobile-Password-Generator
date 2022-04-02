@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { View, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { Overlay, Header, Text, Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-export default function ListItemDetails(props) {
+export default function ListItemDetails({ item, deleteItem }) {
   const [visible, setVisible] = useState(false);
 
-  const openHandler = () => {
-    setVisible(true);
-  };
+  const openHandler = () => setVisible(true);
 
   const confirmDialog = () => {
     Alert.alert(
@@ -21,7 +19,7 @@ export default function ListItemDetails(props) {
           style: 'destructive',
           onPress: () => {
             setVisible(false);
-            props.deleteItem(props.item.key);
+            deleteItem(item.key);
           }
         }
       ],
@@ -33,30 +31,28 @@ export default function ListItemDetails(props) {
     <View>
       <Button
         buttonStyle={{ backgroundColor: 'gray' }}
-        icon={<Icon name="md-eye" size={20} style={{ paddingLeft: 5, paddingRight: 5 }} color="#ffffff" />}
+        icon={<Icon name="md-eye" size={20} style={styles.buttonIcon} color="#ffffff" />}
         onPress={openHandler}
       />
       <Overlay
         isVisible={visible}
-        height='50%'
         onBackdropPress={() => setVisible(false)}
-        overlayStyle={{ padding: 0 }}
-        overlayBackgroundColor='#f2f2f7'
+        overlayStyle={styles.overlay}
       >
-        <View style={{ flex: 1, alignItems: 'center' }}>
+        <View style={styles.container}>
           <Header
-            containerStyle={{ flex: 1 }}
-            leftComponent={{ text: props.item.a, style: { color: '#ffffff', width: 100, fontSize: 25 } }}
+            containerStyle={{ marginTop: '25%', backgroundColor: '#0065ca' }}
+            centerComponent={{ text: item.name, style: styles.headerText }}
           />
-          <View style={{ flex: 3.5, marginTop: '10%', alignItems: 'center' }}>
-            <Text h4>User ID:</Text>
-            <Text h4 style={{ color: 'grey', marginTop: '2%' }} selectable={true}>{props.item.u}</Text>
-            <Text h4 >Password:</Text>
-            <Text h4 style={{ color: 'grey', marginTop: '2%' }} selectable={true}>{props.item.p}</Text>
+          <View style={styles.body}>
+            <Text h4>User ID</Text>
+            <Text h4 style={styles.bodyText} selectable={true}>{item.username}</Text>
+            <Text h4 >Password</Text>
+            <Text h4 style={styles.bodyText} selectable={true}>{item.password}</Text>
           </View>
           <View style={{ flex: 1.5 }}>
             <Button
-              buttonStyle={{ backgroundColor: '#d43131', width: '85%', marginLeft: '5%' }}
+              buttonStyle={styles.deleteButton}
               icon={<Icon name="md-trash" size={20} style={{ paddingRight: 10 }} color="#ffffff" />}
               onPress={confirmDialog}
               title="DELETE ENTRY"
@@ -67,3 +63,37 @@ export default function ListItemDetails(props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  buttonIcon: {
+    paddingHorizontal: 5
+  },
+  overlay: {
+    marginTop: 32,
+    marginBottom: 45,
+    marginHorizontal: 35,
+    padding: 0,
+    borderRadius: 20
+  },
+  container: {
+    alignItems: 'center',
+  },
+  headerText: {
+    color: '#ffffff',
+    fontSize: 45,
+    paddingVertical: '25%'
+  },
+  body: {
+    paddingVertical: '5%',
+    paddingTop: '30%',
+    alignItems: 'center'
+  },
+  bodyText: {
+    color: 'grey',
+    marginBottom: '25%'
+  },
+  deleteButton: {
+    backgroundColor: '#d43131',
+    width: '95%'
+  }
+});

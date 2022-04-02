@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
-import { Button, Text } from 'react-native-elements';
+import { View, StyleSheet } from 'react-native';
+import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as LocalAuthentication from 'expo-local-authentication';
 
-export default function LoadingScreen(props) {
+import Title from './UI/Title';
+
+export default function LocalAuth({ handleAuthSuccess, user }) {
   const [trigger, setTrigger] = useState(true);
 
   const options = { promptMessage: "Please authenticate to unlock" };
@@ -15,23 +17,19 @@ export default function LoadingScreen(props) {
     const auth = async () => {
       const result = await LocalAuthentication.authenticateAsync(options);
       if (result.success) {
-        props.handleAuthSuccess();
+        handleAuthSuccess();
       }
     };
-    if (props.user !== null) {
+    if (user !== null) {
       auth();
     }
-  }, [trigger, props.user]);
+  }, [trigger, user]);
 
   return (
-    <View style={{ flex: 1, height: '100%', alignItems: 'center', backgroundColor: 'black' }}>
-      <View style={{ flex: 3, marginTop: '33%' }}>
-        <Text style={{ color: '#ffffff', fontStyle: 'italic', fontSize: 48 }}>Password</Text>
-        <Text style={{ color: '#ffffff', fontStyle: 'italic', fontSize: 48 }}>Generator</Text>
-      </View>
-      <View style={{ flex: 0.7 }}>
-        <Text style={{ color: '#ffffff', fontSize: 16 }}>Please authorize to continue</Text>
-      </View>
+    <View style={styles.container}>
+      
+      <Title keyword={'authorize'} />
+
       <View style={{ flex: 5 }}>
         <Button
           buttonStyle={{ backgroundColor: 'transparent' }}
@@ -39,6 +37,16 @@ export default function LoadingScreen(props) {
           onPress={() => setTrigger(!trigger)}
         />
       </View>
+
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    height: '100%',
+    alignItems: 'center',
+    backgroundColor: 'black'
+  }
+})
