@@ -30,8 +30,6 @@ export default function UserDetails() {
     });
   };
 
-  // Now we have a few functions for updating a user
-  // Because some details are sensitive, we have to use a different method for updating
   const updateUserDetails = () => {
     if (auth.currentUser.displayName !== user.displayName) {
       updateDisplayName();
@@ -108,7 +106,6 @@ export default function UserDetails() {
     }
   };
 
-  // This deletes the user and its data
   const deleteAccount = () => {
     deleteUser(auth.currentUser)
       .then(() => {
@@ -117,8 +114,7 @@ export default function UserDetails() {
       .catch(error => Alert.alert("An error occurred: " + error));
   };
 
-  // For some sensitive changes we have to re-authenticate the user.
-  // This function addresses that purpose
+  // For some sensitive changes we have to re-authenticate the user
   const reAuthorize = () => {
     setAuthorized(true);
     Alert.alert(
@@ -148,7 +144,6 @@ export default function UserDetails() {
     );
   };
 
-  // SMALLER COMPONENTS??
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={{ flex: 1, height: '100%', alignItems: 'center' }}>
