@@ -12,14 +12,13 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    listener();
+    sessionListener();
     if (!user) {
       setLoading(false);
     }
   }, []);
 
-  // This listener is used to keep track of a user's session on Firebase
-  const listener = () => {
+  const sessionListener = () => {
     onAuthStateChanged(auth, authUser => {
       if (!authUser) {
         setUser(null);
@@ -37,7 +36,6 @@ export default function App() {
     })
   };
 
-  // This is for handling the local authorization
   const handleAuthSuccess = async () => setLoading(false);
 
   if (loading) {
