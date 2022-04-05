@@ -17,15 +17,12 @@ export default function UserNew() {
   const [errors, setErrors] = useState({emailError: '', passwordError: ''});
 
 
-  const openHandler = () => setVisible(true);
+  const handleOpen = () => setVisible(true);
 
-  const signUpHandler = () => {
+  const handleSignUp = () => {
     setErrors({emailError: '', passwordError: ''});
     createUserWithEmailAndPassword(auth, userDetails.email, userDetails.password)
-      .then(() => {
-        sendEmailVerification(auth.currentUser)
-          .catch(error => setErrors(handleError(error.message)));
-      })
+      .then(() => sendEmailVerification(auth.currentUser))
       .catch(error => setErrors(handleError(error.message)));
   };
 
@@ -35,7 +32,7 @@ export default function UserNew() {
         buttonStyle={{ backgroundColor: '#51c72a' }}
         style={{ padding: 10 }}
         icon={<Icon name="md-person-add" size={20} style={{ paddingRight: 10 }} color="#ffffff" />}
-        onPress={openHandler}
+        onPress={handleOpen}
         title="NEW USER" />
         
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -50,7 +47,7 @@ export default function UserNew() {
 
             <FormBody userDetails={userDetails} setUserDetails={setUserDetails} errors={errors} />
 
-            <FormButton label={"SIGN UP"} action={signUpHandler} icon={"md-person-add"} />
+            <FormButton label={"SIGN UP"} action={handleSignUp} icon={"md-person-add"} />
 
           </View>
         </Overlay>
