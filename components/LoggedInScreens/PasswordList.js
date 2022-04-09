@@ -1,64 +1,85 @@
-import React, { useState } from 'react';
-import { View, Alert, FlatList } from 'react-native';
-import { Header, ListItem, Text } from 'react-native-elements';
+import { useState, useEffect } from 'react';
+import { View, Alert, FlatList, StyleSheet } from 'react-native';
+import { ListItem } from 'react-native-elements';
 
-import { firebaseDB } from '../firebase';
 import ListItemDetails from './ListItemDetails';
 
-var moment = require('moment');
+import { getDatabase, ref, onValue, remove } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 
-export default function PasswordList(props) {
-    const [credentialsList, setCredentialsList] = useState([]);
+const auth = getAuth();
+const db = getDatabase();
 
-    const url = '/users/' + props.route.params.uid;
+const moment = require('moment');
 
-    React.useEffect(() => fetchAccounts(), []);
+export default function PasswordList() {
+  const [accountList, setAccountList] = useState([]);
 
-    const fetchAccounts = () => {
-        firebaseDB.ref(url).on('value', snapshot => {
-            const data = snapshot.val();
-            if (data != undefined && data != null) {
-                const details = Object.entries(data).map(item => ({...item[1], key: item[0]}));
-                setCredentialsList(details);
-            } else {
-                setCredentialsList([]);
-            }
-        });
-    };
+  const url = '/users/' + auth.currentUser.uid;
 
-    const deleteItem = async (key) => {
-        await firebaseDB.ref(url + '/' + key).remove();
-        fetchAccounts();
-        Alert.alert("Success", "Login details removed");
-    }
+  useEffect(() => fetchAccounts(), []);
 
-    return (
-        <View style={{height: '100%', flex: 1}}>
-            <Header
-                containerStyle={{backgroundColor: '#141414'}}
-                barStyle="light-content"
-                centerComponent={{ text: 'PASSWORD LIST', style: { color: '#ffffff', fontWeight: '600' } }}
-            />
-            <FlatList
-                style={{margin: '5%'}}
-                data={credentialsList}
-                keyExtractor={item => item.key}
-                renderItem={({item}) => (
-                    <ListItem
-                        containerStyle={{backgroundColor: 'transparent'}}
-                        title={item.a}
-                        titleStyle={{color: 'gray', fontSize: 24}}
-                        subtitle={
-                            <View>
-                                <Text style={{ color: '#d43131', paddingTop: '2%', paddingBottom: '2%'}}>Created {moment(item.d).fromNow()}</Text>
-                            </View>
-                        }
-                        rightElement={() => <ListItemDetails item={item} deleteItem={deleteItem} />}
-                        bottomDivider
-                />
-                )}
-            />
+  const fetchAccounts = () => {
+    const dataRef = ref(db, url);
+    onValue(
+      dataRef,
+      snapshot => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
 
-        </View>
+          const details = Object.entries(data).map(item => ({...item[1], key: item[0]}));
+
+          setAccountList(details);
+        } else {
+          setAccountList([]);
+        }
+      },
+      error => console.log(error)
     );
+  };
+
+  const listItem = ({ item }) => (
+    <ListItem
+      containerStyle={{ backgroundColor: 'transparent' }}
+      bottomDivider
+      onRefresh={() => fetchAccounts()}
+    >
+      <ListItem.Content>
+        <ListItem.Title style={{ color: 'gray', fontSize: 24 }}>
+          {item.name}
+        </ListItem.Title>
+        <ListItem.Subtitle style={styles.subtitle}>
+          Created {moment(item.date).fromNow()}
+        </ListItem.Subtitle>
+      </ListItem.Content>
+      <ListItemDetails item={item} deleteItem={deleteItem} />
+    </ListItem>
+  )
+
+  const deleteItem = async (key) => {
+    const itemRef = ref(db, url + '/' + key);
+    await remove(itemRef);
+    fetchAccounts();
+    Alert.alert("Success", "Login details removed");
+  }
+
+  return (
+    <View style={{ height: '100%', flex: 1 }}>
+      <FlatList
+        style={{ margin: '5%' }}
+        data={accountList}
+        keyExtractor={item => item.key}
+        renderItem={listItem}
+      />
+
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  subtitle: {
+    color: '#d43131',
+    paddingTop: '2%',
+    paddingBottom: '2%'
+  }
+})

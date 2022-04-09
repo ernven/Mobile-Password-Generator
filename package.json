@@ -1,33 +1,38 @@
 {
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "eject": "expo eject"
   },
   "dependencies": {
-    "@react-native-community/masked-view": "0.1.6",
-    "@react-navigation/bottom-tabs": "^5.2.7",
-    "@react-navigation/native": "^5.1.6",
-    "@react-navigation/stack": "^5.2.11",
-    "expo": "~37.0.7",
-    "firebase": "^7.9.0",
-    "moment": "^2.24.0",
-    "react": "^16.12.0",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-37.0.1.tar.gz",
-    "react-native-elements": "^1.2.7",
-    "react-native-gesture-handler": "~1.6.0",
-    "react-native-reanimated": "~1.7.0",
-    "react-native-safe-area-context": "0.7.3",
-    "react-native-screens": "~2.2.0",
-    "react-native-vector-icons": "^6.6.0",
-    "expo-local-authentication": "~9.0.0"
+    "@react-native-async-storage/async-storage": "~1.15.0",
+    "@react-navigation/bottom-tabs": "^6.2.0",
+    "@react-navigation/native": "^6.0.8",
+    "expo": "^44.0.6",
+    "expo-local-authentication": "~12.1.0",
+    "expo-splash-screen": "~0.14.1",
+    "expo-status-bar": "~1.2.0",
+    "firebase": "^9.6.10",
+    "moment": "^2.29.2",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "react-native": "0.64.3",
+    "react-native-elements": "^3.4.2",
+    "react-native-gesture-handler": "~2.1.0",
+    "react-native-reanimated": "~2.3.1",
+    "react-native-safe-area-context": "3.3.2",
+    "react-native-screens": "~3.10.1",
+    "react-native-vector-icons": "^9.1.0",
+    "@react-native-community/slider": "4.1.12"
   },
   "devDependencies": {
-    "babel-preset-expo": "~8.1.0",
-    "@babel/core": "^7.8.6"
+    "@babel/core": "^7.12.9",
+    "babel-preset-expo": "9.0.2"
   },
-  "private": true
+  "private": true,
+  "name": "mobile-password-generator",
+  "version": "1.0.0"
 }
