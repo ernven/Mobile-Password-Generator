@@ -11,7 +11,7 @@
     "@react-native-async-storage/async-storage": "~1.15.0",
     "@react-navigation/bottom-tabs": "^6.2.0",
     "@react-navigation/native": "^6.0.8",
-    "expo": "^47.0.13",
+    "expo": "^49.0.0",
     "expo-local-authentication": "~12.1.0",
     "expo-splash-screen": "~0.14.1",
     "expo-status-bar": "~1.2.0",
